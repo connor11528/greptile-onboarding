@@ -1,12 +1,13 @@
-// File: components/onboarding/OnboardingFlow.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Step1 from './Step1';
 import Step2 from './Step2';
 import Step3 from './Step3';
 import { OnboardingData, PersonalInfo, Preferences } from './types';
+import ApiRequestLog from "@/components/logs/ApiRequestLog";
+import {useApiLogs} from "@/hooks/useApiLogs";
 
 interface OnboardingFlowProps {
     userId: string;
@@ -21,8 +22,9 @@ export default function OnboardingFlow({ userId }: OnboardingFlowProps) {
         completed: false
     });
     const router = useRouter();
+    const { logs, addLog, loading } = useApiLogs();
 
-    // Function to handle step completion and move to next step
+
     const completeStep = (stepData: any) => {
         if (step === 1) {
             setOnboardingData(prev => ({
@@ -42,31 +44,9 @@ export default function OnboardingFlow({ userId }: OnboardingFlowProps) {
                 completed: true,
                 ...stepData
             }));
-            // Save final onboarding data
-            saveOnboardingData();
         }
     };
 
-    // Function to save onboarding data to your database/backend
-    const saveOnboardingData = async () => {
-        try {
-            // Here you would typically call your API to save the data
-            // await fetch('/api/onboarding', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify(onboardingData)
-            // });
-
-            console.log('Onboarding data saved:', onboardingData);
-
-            // Redirect to dashboard after successful onboarding
-            router.push('/dashboard');
-        } catch (error) {
-            console.error('Error saving onboarding data:', error);
-        }
-    };
-
-    // Function to go back to previous step
     const goBack = () => {
         if (step > 1) {
             setStep(step - 1);
@@ -106,6 +86,9 @@ export default function OnboardingFlow({ userId }: OnboardingFlowProps) {
             {step === 1 && <Step1 onComplete={completeStep} />}
             {step === 2 && <Step2 onComplete={completeStep} onBack={goBack} />}
             {step === 3 && <Step3 onComplete={completeStep} onBack={goBack} />}
+
+            <ApiRequestLog userId={userId} logs={logs} loading={loading} />
+
         </div>
     );
 }

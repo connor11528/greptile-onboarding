@@ -1,5 +1,6 @@
 // components/logs/ApiRequestLog.tsx
 import React, { useEffect, useState } from 'react';
+import {ApiLogEntry} from "@/hooks/useApiLogs";
 
 export interface ApiRequest {
     id: string;
@@ -7,39 +8,19 @@ export interface ApiRequest {
     endpoint: string;
     method: string;
     status: number;
-    timestamp: Date;
-    requestBody?: string;
-    responseBody?: string;
+    created_at: string;
+    request_body?: string;
+    response?: string;
 }
 
 interface ApiRequestLogProps {
     userId: string;
+    logs: ApiLogEntry[];
+    loading: boolean
 }
 
-export default function ApiRequestLog({ userId }: ApiRequestLogProps) {
-    const [requests, setRequests] = useState<ApiRequest[]>([]);
-    const [loading, setLoading] = useState(true);
+export default function ApiRequestLog({ userId, loading, logs }: ApiRequestLogProps) {
     const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
-    useEffect(() => {
-        const fetchRequests = async () => {
-            try {
-                const response = await fetch(`/api/logs?userId=${userId}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    setRequests(data);
-                } else {
-                    console.error('Failed to fetch request logs');
-                }
-            } catch (error) {
-                console.error('Error fetching logs:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRequests();
-    }, [userId]);
 
     const toggleExpand = (id: string) => {
         setExpanded(prev => ({
@@ -48,7 +29,7 @@ export default function ApiRequestLog({ userId }: ApiRequestLogProps) {
         }));
     };
 
-    const formatDate = (date: Date) => {
+    const formatDate = (date) => {
         return new Date(date).toLocaleString();
     };
 
@@ -86,13 +67,13 @@ export default function ApiRequestLog({ userId }: ApiRequestLogProps) {
         <div className="bg-white rounded-lg shadow p-4 mt-8">
             <h2 className="text-lg font-semibold mb-4">API Request History</h2>
 
-            {requests.length === 0 ? (
+            {logs && logs.length === 0 ? (
                 <div className="text-center py-6 text-gray-500">
                     No API requests found for your account yet
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {requests.map(request => (
+                    {logs && logs.length && logs.map(request => (
                         <div key={request.id} className="border border-gray-200 rounded-md overflow-hidden">
                             <div
                                 className="flex items-center justify-between bg-gray-50 p-3 cursor-pointer"
@@ -111,7 +92,7 @@ export default function ApiRequestLog({ userId }: ApiRequestLogProps) {
                     {request.status}
                   </span>
                                     <span className="text-gray-500 text-sm">
-                    {formatDate(request.timestamp)}
+                    {formatDate(request.created_at)}
                   </span>
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -128,15 +109,15 @@ export default function ApiRequestLog({ userId }: ApiRequestLogProps) {
                                 <div className="p-4 border-t border-gray-200">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
-                                            <h3 className="font-medium mb-2">Request</h3>
+                                            <h3 className="font-medium mb-2">Request Body</h3>
                                             <pre className="bg-gray-50 p-3 rounded text-xs overflow-x-auto">
-                        {formatJson(request.requestBody) || 'No request body'}
+                        {formatJson(request.request_body) || 'No request body'}
                       </pre>
                                         </div>
                                         <div>
                                             <h3 className="font-medium mb-2">Response</h3>
                                             <pre className="bg-gray-50 p-3 rounded text-xs overflow-x-auto">
-                        {formatJson(request.responseBody) || 'No response body'}
+                        {formatJson(request.response) || 'No response body'}
                       </pre>
                                         </div>
                                     </div>

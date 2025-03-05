@@ -4,9 +4,9 @@ import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 
 export default async function OnboardingPage() {
     const user = await currentUser()
-    console.log(user)
 
-    // If no user is logged in, redirect to home page
+    console.log(user?.id)
+
     if (!user) {
         redirect('/onboarding');
     }
@@ -14,7 +14,7 @@ export default async function OnboardingPage() {
     return (
         <div className="min-h-screen flex flex-col items-center justify-center py-8 px-4">
             <div className="w-full max-w-3xl mx-auto">
-                <OnboardingFlow userId={"1234"} />
+                <OnboardingFlow userId={String(user?.id)} />
             </div>
         </div>
     );

@@ -1,29 +1,49 @@
 import React, { useState } from 'react';
 import { StepProps } from './types';
+import {useApiLogs} from "@/hooks/useApiLogs";
 
-export default function RepositoryIndexingStep({ onComplete }: StepProps) {
+export default function RepositoryIndexingStep({ userId, onComplete }: StepProps) {
     const [loading, setLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
+    const {addLog} = useApiLogs();
 
-    const sampleRepo = {
+    const sampleRepoData = {
         remote: "github",
-        repository: "greptile/demo-repository",
+        repository: "connor11528/nextjs-vector-search",
         branch: "main"
     };
 
+    // todo: refactor to hook
     const indexSampleRepository = async () => {
         setLoading(true);
         setErrorMessage('');
 
         try {
-            // In a real implementation, you would make an actual API call
-            // This is a simulated success response
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const response = await fetch('/api/greptile/index', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(sampleRepoData)
+            });
+
+            const data = await response.json();
+
+            console.log({data})
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to index repository');
+            }
+
             setIsSuccess(true);
             setLoading(false);
+
+            // todo: needs a data provider..
+            addLog(data.newLog)
         } catch (error) {
-            setErrorMessage('Failed to index sample repository. Please try again.');
+            console.error('Error:', error);
+            setErrorMessage(error instanceof Error ? error.message : 'Failed to index sample repository. Please try again.');
             setLoading(false);
         }
     };
@@ -87,21 +107,21 @@ export default function RepositoryIndexingStep({ onComplete }: StepProps) {
 
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mt-6">
                 <h3 className="font-semibold mb-4">Try It Now</h3>
-                <p className="mb-4">Index the Laravel repository to see how it works!</p>
+                <p className="mb-4">Index the sample repository to see how it works!</p>
 
-                <div className="bg-white p-3 rounded border border-gray-300 mb-4">
-                    <div className="grid grid-cols-3 gap-2 text-sm">
-                        <div>
-                            <span className="font-medium">Remote:</span> {sampleRepo.remote}
-                        </div>
-                        <div>
-                            <span className="font-medium">Repository:</span> {sampleRepo.repository}
-                        </div>
-                        <div>
-                            <span className="font-medium">Branch:</span> {sampleRepo.branch}
-                        </div>
-                    </div>
-                </div>
+                {/*<div className="bg-white p-3 rounded border border-gray-300 mb-4">*/}
+                {/*    <div className="grid grid-cols-3 gap-2 text-sm">*/}
+                {/*        <div>*/}
+                {/*            <span className="font-medium">Remote:</span> {sampleRepo.remote}*/}
+                {/*        </div>*/}
+                {/*        <div>*/}
+                {/*            <span className="font-medium">Repository:</span> {sampleRepo.repository}*/}
+                {/*        </div>*/}
+                {/*        <div>*/}
+                {/*            <span className="font-medium">Branch:</span> {sampleRepo.branch}*/}
+                {/*        </div>*/}
+                {/*    </div>*/}
+                {/*</div>*/}
 
                 {isSuccess ? (
                     <div className="bg-green-50 text-green-800 p-4 rounded mb-4">

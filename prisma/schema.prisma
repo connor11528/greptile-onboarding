@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String       @id @default(cuid())
+  clerk_id  String       @unique
+  logs      LogRequest[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([clerk_id])
+}
+
+// todo: could add HTTP method
+model LogRequest {
+  id           String   @id @default(cuid())
+  user_id      String
+  endpoint     String
+  request_body String?  @db.Text
+  response     String?  @db.Text
+  status_code  Int
+  created_at   DateTime @default(now())
+
+  // Relation to User
+  user User @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+}

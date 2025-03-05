@@ -1,34 +1,27 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { currentUser } from '@clerk/nextjs';
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+import {getCurrentUser} from "@/lib/auth";
 
 export async function GET(request: Request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const userId = searchParams.get('userId');
+        const user = await getCurrentUser();
 
-        // Security check - only allow users to view their own logs
-        const user = await currentUser();
-
-        if (!user || user.id !== userId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+        if (!user) {
+            return NextResponse.json({ error: 'Forbidden', message: 'Access denied' })
         }
 
-        const logs = await prisma.apiRequestLog.findMany({
+        const logs = await prisma.logRequest.findMany({
             where: {
-                userId: userId,
+                user_id: user.id
             },
             orderBy: {
-                timestamp: 'desc',
-            },
-            take: 10, // Limit to the 10 most recent requests
+                created_at: 'desc'
+            }
         });
 
         return NextResponse.json(logs);
     } catch (error) {
         console.error('Error fetching logs:', error);
-        return NextResponse.json({ error: 'Failed to fetch logs' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch logs' });
     }
 }

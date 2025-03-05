@@ -25,7 +25,9 @@ export default function Home() {
           <div className="flex gap-6 items-center">
             <SignedOut>
               <SignInButton className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-200 cursor-pointer" />
-              <SignUpButton forceRedirectUrl="/onboarding" className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-6 rounded-md transition-colors duration-200 cursor-pointer" />
+              <SignUpButton
+                  forceRedirectUrl="/onboarding"
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-6 rounded-md transition-colors duration-200 cursor-pointer" />
             </SignedOut>
             <SignedIn>
               <UserButton afterSignOutUrl="/" />
